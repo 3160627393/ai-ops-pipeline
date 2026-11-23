@@ -106,14 +106,21 @@ def push(cfg, content):
     import urllib.request
     if cfg["webhook_type"] == "feishu":
         payload = {"msg_type": "text", "content": {"text": text}}
+        url = cfg["webhook_url"]
     elif cfg["webhook_type"] == "wecom":
         payload = {"msgtype": "markdown", "markdown": {"content": text}}
+        url = cfg["webhook_url"]
+    elif cfg["webhook_type"] == "serverchan":
+        # Server酱：把 SendKey 填在 webhook_url 里即可（形如 SCTxxxxx）
+        key = cfg["webhook_url"].strip()
+        url = f"https://sctapi.ftqq.com/{key}.send"
+        payload = {"title": f"AI 运维日报 {datetime.now():%m-%d}", "desp": text}
     else:
         print(f"不认识的 webhook_type：{cfg['webhook_type']}")
         return False
 
     req = urllib.request.Request(
-        cfg["webhook_url"],
+        url,
         data=json.dumps(payload).encode("utf-8"),
         headers={"Content-Type": "application/json"},
     )
